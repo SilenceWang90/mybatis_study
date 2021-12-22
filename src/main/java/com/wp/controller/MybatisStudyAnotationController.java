@@ -1,13 +1,16 @@
 package com.wp.controller;
 
 import com.wp.entities.YuML;
+import com.wp.mappers.HusbandMapper;
 import com.wp.mappers.YuMLMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -22,6 +25,13 @@ import java.util.List;
 public class MybatisStudyAnotationController {
     @Autowired
     private YuMLMapper yuMLMapper;
+    @Resource
+    private HusbandMapper husbandMapper;
+
+    @GetMapping("/getHusband")
+    public void getHusband(){
+        System.out.println(husbandMapper.findHusband());
+    }
 
     @RequestMapping(value = "/testResultsAnno")
     public String testResultsAnno() {
