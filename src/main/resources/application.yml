@@ -2,10 +2,16 @@ server:
   port: 8080
 spring:
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/mybatis_study?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: wangpeng
-    password: Wangpeng90
+    primary:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/mybatis_study?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: wangpeng
+      password: Wangpeng90
+    second:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/wptest1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: wangpeng
+      password: Wangpeng90
 mybatis:
   #多个路径用逗号分隔
   mapper-locations: classpath:com/wp/mappers/*.xml
