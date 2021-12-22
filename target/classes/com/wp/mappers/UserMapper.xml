@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wp.mappers.UserMapper">
+    <!-- ！！！！！！！！！！mapper.xml必须放在资源文件目录下！！！！！！！！！！！ -->
+    <!-- 设置resultMap作为查询结果的映射，将column数据库字段映射到type中实体类的property属性上(通过setter方法)。 -->
+    <!-- resultMap的属性
+        1、id：必填且唯一，供其他标签引用；
+        2、type：必填，用于配置查询列所映射到的Java对象类型。
+        3、extends：选填，可以配置当前的resultMap继承自其他的resultMap，属性值为继承resultMap的id。
+        4、autoMapping：选填，可选值是true和false。用于配置是否启用非映射字段(没有在resultMap中配置的字段)的自动映射功能，改配置可以覆盖全局autoMappingBehaviour配置。
+     -->
+    <!-- resultMap包含的标签
+        1、constructor：配置使用构造方法注入结果，包含2个子标签
+            <idArg>：id参数，标记结果作为id，可以帮助提高整体性能。对应resultMap中的id标签。
+            <arg>：注入到构造方法的一个普通结果。对应resultMap中的result标签。
+        2、id：对应主键或唯一键
+        3、result：对应普通字段
+        4、association：一对一映射关系
+        5、collection：一对多映射关系
+        6、discriminator：根据结果值撅腚使用哪个结果映射
+        7、case：基于某些值的结果映射
+    -->
+    <!-- 上面3和4即id和result标签对应的属性：
+        column：数据库字段名
+        property：实体类属性名
+        javaType：一个Java类的全局限定名称，或别名(通过typeAlias配置)。如果映射到一个javaBean，需要写明映射到哪个bean，不过Mybatis一般也会自动判断类型；
+            如果映射到hashMap，需要指明javaType属性。
+        jdbcType：数据库字段对应的数据库类型
+        typeHandler：覆盖默认的类型处理器。这个属性值是类的全局限定名称。
+     -->
+    <resultMap id="userMap" type="com.wp.entities.User">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="age" column="age"/>
+        <result property="weight" column="weight"/>
+        <result property="address" column="address"/>
+    </resultMap>
+
+    <!-- id不能重复，因此java的重载不能使用 -->
+    <!-- 不建议通过*来指明查询所有，影响性能，要把所有字段列出来 -->
+    <select id="findById" resultMap="userMap">
+        select * from user where id = #{id};
+    </select>
+
+    <select id="findByReqParam" resultMap="userMap">
+        select * from user where id = #{obj.id};
+    </select>
+
+    <!-- 如果使用resultType的话不能直接用select * from user，因为mybatis并不知道查询的结果列和实体类的映射关系，3种解决方式：
+        1、实体类字段上增加注解，说明映射哪个字段
+        2、查询方法如下：即要给字段起别名，且别名要和实体类属性名一致。(注意，mybatis最终会将property或者别名大写来和实体属性名进行比较，虽然如此，但仍希望我们规范一些直接相同写法)
+        3、mybatis设置驼峰命名规则，这样，数据库字段可以不起别名就可以和实体类属性映射上，只要符合驼峰写法即可。
+    -->
+    <select id="findAll" resultType="com.wp.entities.User">
+        select id id,name name,age age,weight weight from user order by id asc
+    </select>
+
+    <!-- extends可以用其他mapper.xml的resultMap，且可以省略namesapce -->
+    <resultMap id="findAllExtendUsers" type="com.wp.entities.User" extends="com.wp.mappers.UserMapper.userMap">
+    </resultMap>
+    <select id="findAllExtendUsers" resultMap="findAllExtendUsers">
+        select * from user;
+    </select>
+
+    <!-- 标签属性
+         id：唯一标示
+         parameterType：参数类型，Mybatis可以推断，因此可以不写。
+         flushCache：默认值为true，任何时候只要该语句被调用都会清空一级和二级缓存。
+         timeout：设置在抛出异常之前，驱动程序等待数据库返回请求结果的秒数。
+         statementType：对于statement、prepared、callable，Mybatis会分别使用对应的Statement、PreparedStatement、CallableStatement。默认值为prepared。
+         useGeneratedKeys：默认值为false。如果设置为true，Mybatis会使用JDBC的getGeneratedKeys方法取出由数据库内部生成的主键。
+         keyProperty：Mybatis通过getGeneratedKeys获取主键值后将要赋值的属性名。如果希望得到多个数据库自动生成的列，属性值也可以是以逗号分隔的属性名称列表。
+         keyColumn：仅对INSERT和UPDATE有用。通过生成的键值设置表中的列名，这个设置仅在某些数据库(PostgreSQL)中必须的，当主键列不是表中的第一列时需要设置。
+         如果希望得到多个生成的列，也可以是逗号分隔的属性列表。
+         databaseId：如果配置了databaseIdProvider，MyBatis会加载所有的不带databaseId的或匹配当前databaseId的语句。如果同时存在带databaseId和不带databaseId的语句，后者会被忽略。
+         对于日期类型，Java区分date、time、dataTime，分别对应JDBC的Date、TIME、TimeStamp。
+     -->
+    <insert id="insertUser">
+        insert into user(name,age,weight,address,born_date,born_date_time) values (#{user.name},#{user.age},#{user.weight},#{user.address},#{user.bornDate,jdbcType=DATE},#{user.bornDateTime});
+        <!-- selectKey的作用：获取最新的id值，并返回给实体对象 -->
+        <!-- order设置和数据库有关：mysql数据库order必须设置为after，因为需要执行完insert再执行下面的sql后才能拿到最新的主键(即插入的那条数据的主键)；
+             oracle设置为before -->
+        <!-- keyProperty是属性，如果通过@Param起了别名，那么必须增加user.id，不能直接写id -->
+        <selectKey keyColumn="id" resultType="long" keyProperty="user.id" order="AFTER">
+            select LAST_INSERT_ID() as id
+        </selectKey>
+    </insert>
+
+</mapper>

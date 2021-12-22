@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!-- 驼峰命名法，mybatis自动将数据库下划线形式的字段和实体类中驼峰命名的属性中 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+    <mappers>
+        <!-- 单个文件的写法如下 -->
+        <mapper resource="com.wp.mappers.UserMapper.xml"/>
+        <!-- 多个文件的写法如下，指明mapper接口包路径，这样写mybatis会做3件事：
+            1、判断接口对应的命名空间是否配置过，如果配置过抛出异常
+            2、加载接口对应的xml文件，将接口的全局限定名称转换为路径，如将com.wp.mappers.UserMapper转换为
+                com/wp/mappers/UserMapper.xml，找到后解析xml
+            3、处理接口中的方法，通过java的动态代理实现接口中的方法。
+         -->
+        <package name="com.wp.mappers"/>
+    </mappers>
+</configuration>

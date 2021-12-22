@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wp.mappers.WangPMapper">
+    <resultMap id="Base_Columns" type="com.wp.entities.WangP">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="address" column="address"/>
+    </resultMap>
+
+    <!-- 继承其他mapper.xml中的resultMap -->
+    <resultMap id="Extend_Columns" type="com.wp.entities.WangP" extends="com.wp.mappers.YuMLMapper.Base_Columns">
+        <result property="age" column="age"/>
+        <result property="address" column="address"/>
+    </resultMap>
+    <select id="findById" resultMap="Extend_Columns">
+        select * from wang_p where id=#{id}
+    </select>
+
+
+    <!-- if标签 -->
+    <!--<select id="findByIf" resultMap="Base_Columns">
+        select * from wang_p where 1=1
+        <if test="wp.id!=null and wp.id!=''">
+            and id = #{wp.id}
+        </if>
+    </select>-->
+    <!-- Ognl扩展，起别名可以省略全局限定名称 -->
+    <select id="findByIf" resultMap="Base_Columns">
+        select * from wang_p where 1=1
+        <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.id)">
+            and id = #{wp.id}
+        </if>
+    </select>
+
+    <!-- Sql和include标签 -->
+    <sql id="ALL_COLUMNS">
+        id,name,sex,age,address
+    </sql>
+    <select id="findByIncludeSql" resultMap="Base_Columns">
+        select
+        <include refid="ALL_COLUMNS"/>
+        from wang_p
+    </select>
+
+    <!-- choose标签 -->
+    <select id="findByChoose" resultMap="Base_Columns">
+        select
+        <include refid="ALL_COLUMNS"/>
+        from wang_p
+        where 1=1
+        <choose>
+            <when test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.id)">
+                and id = #{wp.id}
+            </when>
+            <otherwise>
+                and 1 = 2
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- where标签：如果该标签包含的元素有返回值，就插入一个where；如果where后面的字符串是以AND和OR开头的，就将他们剔除 -->
+    <select id="findByOptimize" resultMap="Base_Columns">
+        select
+        <include refid="ALL_COLUMNS"/>
+        from wang_p
+        <where>
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.id)">
+                and id = #{wp.id}
+            </if>
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.name)">
+                and name = #{wp.name}
+            </if>
+        </where>
+    </select>
+
+
+    <!-- set标签以及update常用模式 -->
+    <!-- 如果set标签中有返回值，就插入一个set，如果set后面的字符串是以逗号结尾的，就将这个逗号删除 -->
+    <sql id="UPDATE_COLUMNS">
+        <set>
+            <!-- 解决如果set中的内容为空时的sql错误。 -->
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.id)">
+                id = #{wp.id},
+            </if>
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.name)">
+                name = #{wp.name},
+            </if>
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.sex)">
+                sex = #{wp.sex},
+            </if>
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.age)">
+                age = #{wp.age},
+            </if>
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.address)">
+                address = #{wp.address},
+            </if>
+        </set>
+    </sql>
+    <update id="updateBySetSql">
+        update wang_p
+        <include refid="UPDATE_COLUMNS"/>
+        <where>
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(wp.id)">
+                id = #{wp.id}
+            </if>
+        </where>
+    </update>
+
+    <!-- foreach包含以下属性
+        collection：必填，值为要迭循环的属性名
+        item：变量名，值为从迭代对象中取出的每一个值
+        index：索引的属性名，在集合数组情况下值为当前索引值，当迭代循环的类型是map时，这个值为map的key
+        open：整个循环内容开头的字符串
+        close：整个循环内容结尾的字符串
+        separator：每次循环的分隔符
+     -->
+    <!-- 标准用法，防止条件不存在时查询全表导致错误 -->
+    <select id="findByIds" resultType="com.wp.entities.WangP">
+        select
+        <include refid="ALL_COLUMNS"/>
+        from WANG_P
+        <where>
+            <choose>
+                <when test="@com.wp.model.ognl.Ognl@isNotEmpty(ids)">
+                    id in
+                    <foreach collection="ids" open="(" close=")" separator="," item="id" index="i">
+                        #{id}
+                    </foreach>
+                </when>
+                <otherwise>
+                    1 = 2
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!-- 批量插入 -->
+    <sql id="INSERT_COLUMNS">
+        insert into wang_p (name,sex,age,address) values
+    </sql>
+    <insert id="insertList" useGeneratedKeys="true" keyProperty="id">
+        <include refid="INSERT_COLUMNS"/>
+        <foreach collection="list" item="obj" index="i" separator=",">
+            (#{obj.name},#{obj.sex},#{obj.age},#{obj.address})
+        </foreach>
+    </insert>
+
+    <!-- bind标签用法 -->
+    <select id="findByBind" resultType="com.wp.entities.WangP">
+        select <include refid="ALL_COLUMNS"/>
+        from wang_p
+        <where>
+            <!-- 一般写法，但是oracle的concat函数只有2个参数，如果换了数据库就会出现问题 -->
+            <!--<if test="@com.wp.model.ognl.Ognl@isNotEmpty(str)">
+                and name like concat('%',#{str},'%')
+            </if>-->
+            <!-- 优化写法：其实不用函数即可，但是这个例子就是告诉我们bind标签就是可以把一个表达式变成一个参数然后再去使用 -->
+            <if test="@com.wp.model.ognl.Ognl@isNotEmpty(str)">
+                <bind name="nameLike" value="'%'+str+'%'"/>
+                and name like #{nameLike}
+            </if>
+        </where>
+    </select>
+
+    <!--
+    大于：&gt;
+    大于等于：&gt;=
+    小于：&lt;
+    小于等于：&lt;=
+    -->
+    <select id="testCustom" resultType="com.wp.entities.WangP">
+        select <include refid="ALL_COLUMNS"/>
+        from wang_p
+        <where>
+            <choose>
+                <when test="@com.wp.model.ognl.Ognl@isNotEmpty(param.age)">
+                    and age &gt;= 20
+                </when>
+                <otherwise>
+                    and age &lt; 14
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>

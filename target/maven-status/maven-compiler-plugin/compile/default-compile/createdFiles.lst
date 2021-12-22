@@ -1,0 +1,5 @@
+com\wp\mappers\UserMapper.class
+com\wp\MybatisStudyApplication.class
+com\wp\entities\User.class
+com\wp\config\MybatisConfig.class
+com\wp\controller\MybatisStudyController.class
