@@ -3,9 +3,9 @@ package com.wp.controller;
 import com.wp.entities.YuML;
 import com.wp.mappers.HusbandMapper;
 import com.wp.mappers.YuMLMapper;
+import com.wp.service.DynamicDataSourceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,22 +27,25 @@ public class MybatisStudyAnotationController {
     private YuMLMapper yuMLMapper;
     @Resource
     private HusbandMapper husbandMapper;
+    @Resource
+    private DynamicDataSourceService dynamicDataSourceService;
 
     @GetMapping("/getHusband")
-    public void getHusband(){
-        System.out.println(husbandMapper.findHusband());
+    public void getHusband() {
+        System.out.println(dynamicDataSourceService.findHusband());
     }
 
     @RequestMapping(value = "/testResultsAnno")
     public String testResultsAnno() {
-        List<YuML> list = yuMLMapper.findAll();
-        YuML yuML = yuMLMapper.findByParam(3L);
-        log.info("输出结果：{}", yuML);
+        List<YuML> list = dynamicDataSourceService.findAll();
+//        YuML yuML = yuMLMapper.findByParam(3L);
+        log.info("输出结果：{}", list);
         return "OK";
     }
 
     /**
      * 插入数据后获取id
+     *
      * @return
      */
     @RequestMapping(value = "/testInsertAnno")
@@ -58,14 +61,15 @@ public class MybatisStudyAnotationController {
 
     /**
      * SqlProvider使用
+     *
      * @return
      */
     @RequestMapping(value = "/testProvider")
-    public String testProvider(){
+    public String testProvider() {
         YuML obj = new YuML();
         obj.setId(10L);
         YuML yuML = yuMLMapper.getByProvider(obj);
-        log.info("查询结果：{}",yuML);
+        log.info("查询结果：{}", yuML);
         return "OK";
     }
 }

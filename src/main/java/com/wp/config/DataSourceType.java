@@ -1,5 +1,6 @@
 package com.wp.config;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -9,46 +10,18 @@ import lombok.extern.slf4j.Slf4j;
  * @Created by wangpeng116
  */
 @Slf4j
-public class DataSourceType {
+@Getter
+public enum DataSourceType {
+    primary("primary", "1"),
+    second("second", "2"),
+    ;
 
-    /**
-     * 数据源类型枚举
-     */
-    public enum DataBaseType {
-        primary, second
+    private String name;
+    private String value;
+
+    DataSourceType(String name, String value) {
+        this.name = name;
+        this.value = value;
     }
 
-    // 增加线程安全
-    private static final ThreadLocal<DataBaseType> type = new ThreadLocal<>();
-
-    /**
-     * 当前线程设置数据源类型
-     *
-     * @param dataBaseType 数据源类型
-     */
-    public static void setDataBaseType(DataBaseType dataBaseType) {
-        if (dataBaseType == null) {
-            type.set(DataBaseType.primary);
-        } else {
-            type.set(dataBaseType);
-        }
-        log.info("当前数据源为：{}", dataBaseType);
-    }
-
-    /**
-     * 获取数据源类型
-     *
-     * @return
-     */
-    public static DataBaseType getDataBaseType() {
-        DataBaseType dataBaseType = type.get() == null ? DataBaseType.primary : type.get();
-        return dataBaseType;
-    }
-
-    /**
-     * 清空数据源类型
-     */
-    public static void clearDataBaseType() {
-        type.remove();
-    }
 }

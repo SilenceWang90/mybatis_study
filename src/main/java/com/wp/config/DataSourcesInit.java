@@ -1,6 +1,7 @@
 package com.wp.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Primary;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * @Classname DataSourcesInit
@@ -19,7 +21,6 @@ import java.sql.SQLException;
 @Configuration
 @Slf4j
 public class DataSourcesInit {
-
     @Resource
     private DataSourcesProperties dataSourcesProperties;
 
@@ -28,7 +29,6 @@ public class DataSourcesInit {
      *
      * @return
      */
-    @Primary
     @Bean("custom-wp-primaryDataSource")
     public DataSource getPrimaryDataSource() {
         DruidDataSource druidDataSource = new DruidDataSource();
@@ -63,5 +63,23 @@ public class DataSourcesInit {
             log.error("创建数据源异常：", e);
         }
         return druidDataSource;
+    }
+
+    /**
+     * 配置动态数据源
+     *
+     * @return
+     */
+    @Bean(name = "dynamicDataSource")
+    @Primary
+    public DataSource dynamicDataSource() {
+        DynamicDataSourceConfig dynamicDataSourceConfig = new DynamicDataSourceConfig();
+        // 默认数据源
+        dynamicDataSourceConfig.setDefaultTargetDataSource(getPrimaryDataSource());
+        Map<Object, Object> dataSourceMap = Maps.newHashMap();
+        dataSourceMap.put("primary", getPrimaryDataSource());
+        dataSourceMap.put("second", getSecondDataSource());
+        dynamicDataSourceConfig.setTargetDataSources(dataSourceMap);
+        return dynamicDataSourceConfig;
     }
 }
