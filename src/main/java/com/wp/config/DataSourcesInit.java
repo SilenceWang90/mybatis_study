@@ -73,12 +73,14 @@ public class DataSourcesInit {
     @Bean(name = "dynamicDataSource")
     @Primary
     public DataSource dynamicDataSource() {
+        // DynamicDataSourceConfig实现了Spring的AbstractRoutingDataSource用于数据源切换
         DynamicDataSourceConfig dynamicDataSourceConfig = new DynamicDataSourceConfig();
         // 默认数据源
         dynamicDataSourceConfig.setDefaultTargetDataSource(getPrimaryDataSource());
         Map<Object, Object> dataSourceMap = Maps.newHashMap();
         dataSourceMap.put("primary", getPrimaryDataSource());
         dataSourceMap.put("second", getSecondDataSource());
+        // 将数据源放入到动态数据源，用于切换使用
         dynamicDataSourceConfig.setTargetDataSources(dataSourceMap);
         return dynamicDataSourceConfig;
     }
