@@ -5,7 +5,8 @@ import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 /**
  * @Classname DynamicDataSourceConfig
- * @Description 动态切换数据源
+ * @Description 动态切换数据源，重写determineCurrentLookupKey用于数据源切换
+ * 当前线程使用的数据源要从ThreadLocal中获取，防止各线程之间发生数据源篡改。
  * @Date 2021/12/22 15:38
  * @Created by wangpeng116
  */
